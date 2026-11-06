@@ -1,0 +1,6 @@
+include CITATION.cff
+recursive-include docs *.md
+include docs/images/mn-example-python-output.png
+recursive-include examples *.py
+recursive-include validation *.md *.py
+recursive-include .github *.yml

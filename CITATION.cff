@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use LCF Lab, please cite the software version."
+title: "LCF Lab"
+type: software
+authors:
+  - family-names: Jagadeesan
+    given-names: Sathya Narayanan
+version: "0.1.0"

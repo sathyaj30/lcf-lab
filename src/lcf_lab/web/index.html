@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LCF Lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+<main id="lcf-lab" aria-label="LCF Lab analysis workbench">
+  <header class="lcf-titlebar">
+    <span class="lcf-symbol" aria-hidden="true">LC</span>
+    <h1>LCF Lab</h1>
+    <span class="lcf-title-divider" aria-hidden="true"></span>
+    <span data-project-title>New analysis</span>
+    <span class="lcf-demo-tag" data-demo-tag hidden>Synthetic example</span>
+  </header>
+  <nav class="lcf-toolbar" aria-label="Analysis commands">
+    <button type="button" data-action="import">Import samples…</button>
+    <button type="button" data-action="reference" disabled>Add standard…</button>
+    <button type="button" data-action="library" disabled>Reference library…</button>
+    <button type="button" data-action="example">Examples…</button>
+    <span class="lcf-tool-divider" aria-hidden="true"></span>
+    <button type="button" class="lcf-run" data-action="fit" disabled>Fit batch</button>
+    <button type="button" data-action="export" disabled>Export ZIP</button>
+  </nav>
+  <div class="lcf-error lcf-global-error" role="alert" data-global-error hidden></div>
+  <div class="lcf-workspace">
+    <aside class="lcf-tree" aria-label="Project explorer">
+      <h2 class="lcf-pane-heading">Project explorer</h2>
+      <div class="lcf-tree-content">
+        <p class="lcf-group-name"><span aria-hidden="true">▾</span> Samples <span data-count>0</span></p>
+        <div data-sample-list></div>
+        <p class="lcf-group-name"><span aria-hidden="true">▾</span> Standards <span data-ref-count>0</span></p>
+        <div data-ref-list></div>
+      </div>
+    </aside>
+    <section class="lcf-plot-pane" aria-label="Spectra and residual">
+      <div class="lcf-plot-heading">
+        <div>
+          <h2 data-sample-title>Spectrum</h2>
+          <div class="lcf-muted" data-spectrum-detail></div>
+        </div>
+        <label class="lcf-inline-check"><input type="checkbox" data-show-references> Show standards</label>
+      </div>
+      <div class="lcf-plot-legend" aria-label="Plot legend">
+        <span><i class="lcf-mark observed" aria-hidden="true"></i> Sample</span>
+        <span><i class="lcf-mark fitted" aria-hidden="true"></i> Fit</span>
+        <span><i class="lcf-mark window" aria-hidden="true"></i> Fit window</span>
+      </div>
+      <div class="lcf-chart-box" data-chart></div>
+      <div class="lcf-fit-message" role="status" data-fit-message></div>
+      <div class="lcf-error" role="alert" data-error hidden>
+        <span data-error-text></span>
+        <button type="button" data-action="overlap" hidden>Use shared range</button>
+      </div>
+      <ul class="lcf-fit-warnings" data-fit-warnings hidden></ul>
+    </section>
+    <aside class="lcf-inspector" aria-label="Fit model">
+      <h2 class="lcf-pane-heading">Fit model</h2>
+      <div class="lcf-tabs" role="tablist" aria-label="Fit model views">
+        <button type="button" role="tab" id="lcf-ref-tab" aria-controls="lcf-ref-panel" aria-selected="true">Standards</button>
+        <button type="button" role="tab" id="lcf-settings-tab" aria-controls="lcf-settings-panel" aria-selected="false">Settings</button>
+      </div>
+      <div class="lcf-inspector-body" id="lcf-ref-panel" role="tabpanel" aria-labelledby="lcf-ref-tab">
+        <div class="lcf-inspector-table">
+          <table class="lcf-refs" aria-label="Reference standards">
+            <colgroup><col class="lcf-col-use"><col><col class="lcf-col-val"><col class="lcf-col-weight"><col class="lcf-col-remove"></colgroup>
+            <thead><tr><th scope="col">Use</th><th scope="col">Reference</th><th scope="col"><abbr title="Nominal oxidation state">Ox. state</abbr></th><th scope="col">Weight</th><th scope="col"><span class="lcf-sr">Remove</span></th></tr></thead>
+            <tbody data-reference-rows></tbody>
+          </table>
+          <p class="lcf-muted lcf-empty-note" data-reference-empty>Add standards with the same element, edge, and normalization as your samples.</p>
+        </div>
+        <dl class="lcf-inspector-readout">
+          <div><dt>Weighted nominal oxidation state</dt><dd data-valence>—</dd></div>
+          <div><dt>Energy offset</dt><dd data-offset>—</dd></div>
+          <div><dt>Fit RMSE</dt><dd data-rmse>—</dd></div>
+        </dl>
+      </div>
+      <div class="lcf-inspector-body" id="lcf-settings-panel" role="tabpanel" aria-labelledby="lcf-settings-tab" hidden>
+        <p class="lcf-settings-caption">Fitting window</p>
+        <div class="lcf-window-fields">
+          <label>Start (eV)<input type="number" step="any" data-setting="fit_min"></label>
+          <label>End (eV)<input type="number" step="any" data-setting="fit_max"></label>
+        </div>
+        <div class="lcf-window-fields lcf-shift-field">
+          <label>Maximum offset (eV)<input type="number" min="0" step="any" data-setting="max_shift"></label>
+          <label>Offset step (eV)<input type="number" min="0.000001" step="any" data-setting="shift_step"></label>
+        </div>
+        <label class="lcf-inline-check lcf-sum-field"><input type="checkbox" data-setting="sum_to_one" checked> Constrain weights to sum to 1</label>
+        <dl class="lcf-inspector-readout">
+          <div><dt>Normalization</dt><dd>As supplied</dd></div>
+          <div><dt>Shared energy range</dt><dd data-coverage>—</dd></div>
+        </dl>
+      </div>
+    </aside>
+  </div>
+  <section class="lcf-results" aria-label="Batch results">
+    <h2 class="lcf-pane-heading">Batch results <span data-result-count></span></h2>
+    <table class="lcf-batch" aria-label="Batch fit results">
+      <thead><tr><th scope="col">Sample</th><th scope="col">Reference weights</th><th scope="col">Nominal mean</th><th scope="col">Offset (eV)</th><th scope="col">RMSE</th><th scope="col">Status</th></tr></thead>
+      <tbody data-results></tbody>
+    </table>
+    <p class="lcf-muted lcf-empty-note" data-result-empty>Results appear here after fitting.</p>
+  </section>
+  <footer class="lcf-statusbar">
+    <span><i aria-hidden="true"></i><span data-file-status>Local analysis</span></span>
+    <span data-project-edge></span>
+    <span>Energy in eV</span>
+    <span data-operation role="status" aria-live="polite"></span>
+  </footer>
+  <dialog class="lcf-dialog" data-import-dialog aria-labelledby="lcf-import-title">
+    <form data-import-form>
+      <h2 id="lcf-import-title">Import sample spectra</h2>
+      <div class="lcf-dialog-fields">
+        <label>Element<select data-elements data-import-element aria-label="Sample element"></select></label>
+        <label>Edge<select data-edges data-import-edge aria-label="Sample edge"></select></label>
+      </div>
+      <label class="lcf-dialog-field">Normalized spectra
+        <input type="file" accept=".csv,.tsv,.dat,.txt" data-sample-files multiple required>
+      </label>
+      <p class="lcf-muted">CSV, TSV, DAT, or TXT. Use energy in eV in the first column and one or more normalized signals in the remaining columns.</p>
+      <label class="lcf-dialog-field">Detection mode (optional)<select data-detection data-sample-mode aria-label="Sample detection mode"></select></label>
+      <label class="lcf-dialog-field">Provenance (optional)<input type="text" maxlength="500" data-sample-provenance placeholder="Beamline, acquisition date, or source"></label>
+      <label class="lcf-inline-check lcf-sum-field" data-replace-row hidden><input type="checkbox" data-replace> Replace the current project</label>
+      <p class="lcf-error" role="alert" data-import-error hidden></p>
+      <div class="lcf-dialog-actions">
+        <button type="button" data-action="close-dialog">Cancel</button>
+        <button type="submit" class="lcf-run">Import samples</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="lcf-dialog" data-reference-dialog aria-labelledby="lcf-add-title">
+    <form data-reference-form>
+      <h2 id="lcf-add-title">Add standard</h2>
+      <div class="lcf-dialog-fields">
+        <label>Element<select data-elements data-reference-element aria-label="Standard element"></select></label>
+        <label>Edge<select data-edges data-reference-edge aria-label="Standard edge"></select></label>
+      </div>
+      <label class="lcf-dialog-field">Normalized reference spectrum
+        <input type="file" accept=".csv,.tsv,.dat,.txt" data-reference-file required>
+      </label>
+      <p class="lcf-muted">Use two columns containing energy in eV and normalized signal.</p>
+      <label class="lcf-dialog-field">Reference label<input type="text" maxlength="100" data-new-label placeholder="Use file name if blank"></label>
+      <label class="lcf-dialog-field">Nominal oxidation state (optional)<input type="number" step="any" data-new-valence></label>
+      <label class="lcf-dialog-field">Detection mode (optional)<select data-detection data-reference-mode aria-label="Standard detection mode"></select></label>
+      <label class="lcf-dialog-field">Provenance (optional)<input type="text" maxlength="500" data-reference-provenance placeholder="Compound, beamline, citation, or source"></label>
+      <p class="lcf-error" role="alert" data-reference-error hidden></p>
+      <div class="lcf-dialog-actions">
+        <button type="button" data-action="close-dialog">Cancel</button>
+        <button type="submit" class="lcf-run">Add to standards</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="lcf-dialog lcf-library" data-library-dialog aria-labelledby="lcf-library-title">
+    <form data-library-form>
+      <h2 id="lcf-library-title">Reference library</h2>
+      <p class="lcf-muted" data-library-context></p>
+      <label class="lcf-dialog-field">Open a local reference pack (JSON)
+        <input type="file" accept=".json,application/json" data-library-file>
+      </label>
+      <label class="lcf-inline-check lcf-sum-field" data-library-other-row hidden>
+        <input type="checkbox" data-library-other> Show other or unspecified detection modes
+      </label>
+      <div class="lcf-library-list" data-library-list></div>
+      <p class="lcf-muted" data-library-status role="status"></p>
+      <p class="lcf-error" role="alert" data-library-error hidden></p>
+      <div class="lcf-dialog-actions">
+        <button type="button" data-action="close-dialog">Close</button>
+        <button type="submit" class="lcf-run" data-library-add disabled>Add selected</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="lcf-dialog" data-example-dialog aria-labelledby="lcf-example-title">
+    <form data-example-form>
+      <h2 id="lcf-example-title">Load an example project</h2>
+      <label class="lcf-dialog-field">Synthetic dataset
+        <select data-example-element aria-label="Example element">
+          <option value="Fe">Iron (Fe), L₂,₃</option>
+          <option value="Mn">Manganese (Mn), L₂,₃</option>
+        </select>
+      </label>
+      <p class="lcf-muted" data-example-detail></p>
+      <p class="lcf-error" role="alert" data-example-error hidden></p>
+      <div class="lcf-dialog-actions">
+        <button type="button" data-action="close-dialog">Cancel</button>
+        <button type="submit" class="lcf-run" data-example-submit>Load example</button>
+      </div>
+    </form>
+  </dialog>
+</main>
+</body>
+</html>
